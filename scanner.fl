@@ -1,0 +1,50 @@
+%option noyywrap
+%{
+    #include <stdio.h>
+    #include "syntax_analyzer.tab.h"
+%}
+ws [ \t\n]
+digit [0-9]
+number {digit}+
+ID [a-zA-Z_][a-zA-z0-9]*
+assignment =
+end_marker ;
+math_operator [\+\-"*"/]
+bracket_open "("
+bracket_close ")"
+brace_open "{"
+brace_close "}"
+output_instruction print
+%%
+int                     { return INT; }
+if                      { yylval.number = 0; return IF; }
+else                    { return ELSE; }
+while                   { yylval.number = 1; return WHILE; }
+
+"<"                     { yylval.identifier = strdup(yytext); return RELOP; }
+"<="                    { yylval.identifier = strdup(yytext); return RELOP; }
+"=="                    { yylval.identifier = strdup(yytext); return RELOP; }
+"!="                    { yylval.identifier = strdup(yytext); return RELOP; }
+">"                     { yylval.identifier = strdup(yytext); return RELOP; }
+">="                    { yylval.identifier = strdup(yytext); return RELOP; }
+
+"&&"                    { return AND; }
+"||"                    { return OR; }
+"!"                     { return NOT; }
+
+{output_instruction}    { return PRINT; }
+
+{ID}                    { yylval.identifier = strdup(yytext); return ID; }
+{number}                { yylval.number = atoi(yytext); return NUMBER; }
+
+{math_operator}         { return yytext[0]; }
+{assignment}            { return ASSIGN; }
+{end_marker}            { return ENDMARKER; }
+{bracket_open}          { return yytext[0]; } 
+{bracket_close}         { return yytext[0]; } 
+{brace_open}            { return yytext[0]; }
+{brace_close}           { return yytext[0]; }
+{ws}                    {}
+<<EOF>>                 { return ENDFILE;}
+.                       { return yytext[0];}
+%%
